@@ -1,0 +1,1440 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Warehouse Management System</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <h1>Warehouse Management System</h1>
+
+    <!-- ================= TABLE MENU ================= -->
+
+    <div class="table-menu">
+
+        <button onclick="showTable('product')">Products</button>
+        <button onclick="showTable('supplier')">Suppliers</button>
+        <button onclick="showTable('customer')">Customers</button>
+        <button onclick="showTable('employee')">Employees</button>
+        <button onclick="showTable('warehouse')">Warehouses</button>
+        <button onclick="showTable('order')">Orders</button>
+
+    </div>
+
+
+    <!-- ================= OPERATION AREA ================= -->
+
+    <div id="operationArea" class="operation-area"></div>
+
+
+    <script>
+
+        let currentTable = "";
+
+
+        /* =====================================================
+           COMMON FUNCTIONS
+        ===================================================== */
+
+        function showTable(table) {
+
+            currentTable = table;
+
+            const area = document.getElementById("operationArea");
+
+            area.innerHTML = "";
+
+            if (table === "product") {
+                showProductSection();
+            }
+
+            else if (table === "supplier") {
+                showSupplierSection();
+            }
+
+            else if (table === "customer") {
+                showCustomerSection();
+            }
+
+            else if (table === "employee") {
+                showEmployeeSection();
+            }
+
+            else if (table === "warehouse") {
+                showWarehouseSection();
+            }
+
+            else if (table === "order") {
+                showOrderSection();
+            }
+        }
+
+
+        function operationButtons(table) {
+
+            return `
+        <div class="operation-buttons">
+
+            <button onclick="showAdd('${table}')">
+                Add
+            </button>
+
+            <button onclick="showUpdate('${table}')">
+                Update
+            </button>
+
+            <button onclick="showDelete('${table}')">
+                Delete
+            </button>
+
+            <button onclick="viewRecords('${table}')">
+                View
+            </button>
+
+        </div>
+
+        <div id="formArea"></div>
+    `;
+        }
+
+
+        function clearArea() {
+            document.getElementById("formArea").innerHTML = "";
+        }
+
+
+        /* =====================================================
+           TABLE SECTIONS
+        ===================================================== */
+
+        function showProductSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Products</h2>
+
+        ${operationButtons("product")}
+    `;
+        }
+
+
+        function showSupplierSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Suppliers</h2>
+
+        ${operationButtons("supplier")}
+    `;
+        }
+
+
+        function showCustomerSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Customers</h2>
+
+        ${operationButtons("customer")}
+    `;
+        }
+
+
+        function showEmployeeSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Employees</h2>
+
+        ${operationButtons("employee")}
+    `;
+        }
+
+
+        function showWarehouseSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Warehouses</h2>
+
+        ${operationButtons("warehouse")}
+    `;
+        }
+
+
+        function showOrderSection() {
+
+            document.getElementById("operationArea").innerHTML = `
+        <h2>Orders</h2>
+
+        ${operationButtons("order")}
+    `;
+        }
+
+
+        /* =====================================================
+           ADD
+        ===================================================== */
+
+        function showAdd(table) {
+
+            const area = document.getElementById("formArea");
+
+            /* ---------- PRODUCT ---------- */
+
+            if (table === "product") {
+
+                area.innerHTML = `
+            <h3>Add Product</h3>
+
+            <form onsubmit="addProduct(event)">
+
+                <label>Product ID</label>
+                <input type="text"
+                       id="addPId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Product Name</label>
+                <input type="text"
+                       id="addPName"
+                       required>
+
+                <label>Product Price</label>
+                <input type="text"
+                       id="addPPrice"
+                       inputmode="decimal"
+                       required>
+
+                <label>Product Category</label>
+                <input type="text"
+                       id="addPCategory"
+                       required>
+
+                <button type="submit">
+                    Add Product
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ---------- SUPPLIER ---------- */
+
+            else if (table === "supplier") {
+
+                area.innerHTML = `
+            <h3>Add Supplier</h3>
+
+            <form onsubmit="addSupplier(event)">
+
+                <label>Supplier ID</label>
+                <input type="text"
+                       id="addSId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Supplier Name</label>
+                <input type="text"
+                       id="addSName"
+                       required>
+
+                <button type="submit">
+                    Add Supplier
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ---------- CUSTOMER ---------- */
+
+            else if (table === "customer") {
+
+                area.innerHTML = `
+            <h3>Add Customer</h3>
+
+            <form onsubmit="addCustomer(event)">
+
+                <label>Customer ID</label>
+                <input type="text"
+                       id="addCId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Customer Name</label>
+                <input type="text"
+                       id="addCName"
+                       required>
+
+                <label>Customer Phone Number</label>
+                <input type="text"
+                       id="addCPhone"
+                       inputmode="numeric"
+                       required>
+
+                <button type="submit">
+                    Add Customer
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ---------- EMPLOYEE ---------- */
+
+            else if (table === "employee") {
+
+                area.innerHTML = `
+            <h3>Add Employee</h3>
+
+            <form onsubmit="addEmployee(event)">
+
+                <label>Employee ID</label>
+                <input type="text"
+                       id="addEId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Employee Name</label>
+                <input type="text"
+                       id="addEName"
+                       required>
+
+                <label>Employee Role</label>
+                <input type="text"
+                       id="addERole"
+                       required>
+
+                <label>Employee Phone Number</label>
+                <input type="text"
+                       id="addEPhone"
+                       inputmode="numeric"
+                       required>
+
+                <label>Warehouse ID</label>
+                <input type="text"
+                       id="addEWId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Supervisor Employee ID</label>
+                <input type="text"
+                       id="addESupervisor"
+                       inputmode="numeric">
+
+                <button type="submit">
+                    Add Employee
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ---------- WAREHOUSE ---------- */
+
+            else if (table === "warehouse") {
+
+                area.innerHTML = `
+            <h3>Add Warehouse</h3>
+
+            <form onsubmit="addWarehouse(event)">
+
+                <label>Warehouse ID</label>
+                <input type="text"
+                       id="addWId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Warehouse Name</label>
+                <input type="text"
+                       id="addWName"
+                       required>
+
+                <label>Warehouse Area</label>
+                <input type="text"
+                       id="addWArea"
+                       required>
+
+                <label>Warehouse City</label>
+                <input type="text"
+                       id="addWCity"
+                       required>
+
+                <label>Warehouse State</label>
+                <input type="text"
+                       id="addWState"
+                       required>
+
+                <label>Warehouse Pincode</label>
+                <input type="text"
+                       id="addWPincode"
+                       inputmode="numeric"
+                       required>
+
+                <label>Warehouse Capacity</label>
+                <input type="text"
+                       id="addWCapacity"
+                       inputmode="numeric"
+                       required>
+
+                <label>Manager Employee ID</label>
+                <input type="text"
+                       id="addWManager"
+                       inputmode="numeric">
+
+                <button type="submit">
+                    Add Warehouse
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ---------- ORDER ---------- */
+
+            else if (table === "order") {
+
+                area.innerHTML = `
+            <h3>Add Order</h3>
+
+            <form onsubmit="addOrder(event)">
+
+                <label>Order ID</label>
+                <input type="text"
+                       id="addOId"
+                       inputmode="numeric"
+                       required>
+
+                <label>Order Date</label>
+                <input type="date"
+                       id="addODate"
+                       required>
+
+                <label>Payment Type</label>
+                <input type="text"
+                       id="addOPayment"
+                       required>
+
+                <label>Customer ID</label>
+                <input type="text"
+                       id="addOCId"
+                       inputmode="numeric"
+                       required>
+
+                <button type="submit">
+                    Add Order
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+        }
+
+
+        /* =====================================================
+           ADD - PRODUCT
+        ===================================================== */
+
+        async function addProduct(event) {
+
+            event.preventDefault();
+
+            const data = {
+                p_id: document.getElementById("addPId").value,
+                p_name: document.getElementById("addPName").value,
+                p_price: document.getElementById("addPPrice").value,
+                category: document.getElementById("addPCategory").value
+            };
+
+            const response = await fetch("/add-product", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           ADD - SUPPLIER
+        ===================================================== */
+
+        async function addSupplier(event) {
+
+            event.preventDefault();
+
+            const data = {
+                s_id: document.getElementById("addSId").value,
+                s_name: document.getElementById("addSName").value
+            };
+
+            const response = await fetch("/add-supplier", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           ADD - CUSTOMER
+        ===================================================== */
+
+        async function addCustomer(event) {
+
+            event.preventDefault();
+
+            const data = {
+                c_id: document.getElementById("addCId").value,
+                c_name: document.getElementById("addCName").value,
+                c_phone: document.getElementById("addCPhone").value
+            };
+
+            const response = await fetch("/add-customer", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           ADD - EMPLOYEE
+        ===================================================== */
+
+        async function addEmployee(event) {
+
+            event.preventDefault();
+
+            const data = {
+                e_id: document.getElementById("addEId").value,
+                e_name: document.getElementById("addEName").value,
+                role: document.getElementById("addERole").value,
+                e_phone: document.getElementById("addEPhone").value,
+                w_id: document.getElementById("addEWId").value,
+                supervisor_id: document.getElementById("addESupervisor").value || null
+            };
+
+            const response = await fetch("/add-employee", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           ADD - WAREHOUSE
+        ===================================================== */
+
+        async function addWarehouse(event) {
+
+            event.preventDefault();
+
+            const data = {
+                w_id: document.getElementById("addWId").value,
+                w_name: document.getElementById("addWName").value,
+                w_area: document.getElementById("addWArea").value,
+                w_city: document.getElementById("addWCity").value,
+                w_state: document.getElementById("addWState").value,
+                w_pincode: document.getElementById("addWPincode").value,
+                capacity: document.getElementById("addWCapacity").value,
+                manager_id: document.getElementById("addWManager").value || null
+            };
+
+            const response = await fetch("/add-warehouse", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           ADD - ORDER
+        ===================================================== */
+
+        async function addOrder(event) {
+
+            event.preventDefault();
+
+            const data = {
+                o_id: document.getElementById("addOId").value,
+                o_date: document.getElementById("addODate").value,
+                payment_type: document.getElementById("addOPayment").value,
+                c_id: document.getElementById("addOCId").value
+            };
+
+            const response = await fetch("/add-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            showMessage(result);
+        }
+
+
+        /* =====================================================
+           UPDATE
+        ===================================================== */
+
+        function showUpdate(table) {
+
+            const area = document.getElementById("formArea");
+
+            let label;
+            let idName;
+
+            if (table === "product") {
+                label = "Product ID";
+                idName = "updateId";
+            }
+
+            else if (table === "supplier") {
+                label = "Supplier ID";
+                idName = "updateId";
+            }
+
+            else if (table === "customer") {
+                label = "Customer ID";
+                idName = "updateId";
+            }
+
+            else if (table === "employee") {
+                label = "Employee ID";
+                idName = "updateId";
+            }
+
+            else if (table === "warehouse") {
+                label = "Warehouse ID";
+                idName = "updateId";
+            }
+
+            else if (table === "order") {
+                label = "Order ID";
+                idName = "updateId";
+            }
+
+            area.innerHTML = `
+        <h3>Update ${capitalize(table)}</h3>
+
+        <label>${label}</label>
+
+        <input type="text"
+               id="${idName}"
+               inputmode="numeric">
+
+        <button onclick="findForUpdate('${table}')">
+            Search
+        </button>
+
+        <p id="searchMessage" class="message"></p>
+
+        <div id="editArea"></div>
+    `;
+        }
+
+
+        async function findForUpdate(table) {
+
+            const id = document.getElementById("updateId").value;
+
+            if (!id) return;
+
+            let url;
+
+            if (table === "product")
+                url = `/get-product/${id}`;
+
+            else if (table === "supplier")
+                url = `/get-supplier/${id}`;
+
+            else if (table === "customer")
+                url = `/get-customer/${id}`;
+
+            else if (table === "employee")
+                url = `/get-employee/${id}`;
+
+            else if (table === "warehouse")
+                url = `/get-warehouse/${id}`;
+
+            else if (table === "order")
+                url = `/get-order/${id}`;
+
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (!result.found) {
+
+                document.getElementById("searchMessage").textContent =
+                    result.message;
+
+                document.getElementById("searchMessage").className =
+                    "message error";
+
+                return;
+            }
+
+            document.getElementById("searchMessage").textContent = "";
+
+            showEditForm(table, result.record || result.product);
+        }
+
+
+        /* =====================================================
+           EDIT FORMS
+        ===================================================== */
+
+        function showEditForm(table, record) {
+
+            const area = document.getElementById("editArea");
+
+
+            /* PRODUCT */
+
+            if (table === "product") {
+
+                area.innerHTML = `
+            <form onsubmit="updateProduct(event)">
+
+                <label>Product Name</label>
+                <input type="text"
+                       id="editPName"
+                       value="${record.P_name}"
+                       required>
+
+                <label>Product Price</label>
+                <input type="text"
+                       id="editPPrice"
+                       value="${record.P_price}"
+                       inputmode="decimal"
+                       required>
+
+                <label>Product Category</label>
+                <input type="text"
+                       id="editPCategory"
+                       value="${record.Category}"
+                       required>
+
+                <button type="submit">
+                    Update Product
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* SUPPLIER */
+
+            else if (table === "supplier") {
+
+                area.innerHTML = `
+            <form onsubmit="updateSupplier(event)">
+
+                <label>Supplier Name</label>
+                <input type="text"
+                       id="editSName"
+                       value="${record.S_name}"
+                       required>
+
+                <button type="submit">
+                    Update Supplier
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* CUSTOMER */
+
+            else if (table === "customer") {
+
+                area.innerHTML = `
+            <form onsubmit="updateCustomer(event)">
+
+                <label>Customer Name</label>
+                <input type="text"
+                       id="editCName"
+                       value="${record.C_name}"
+                       required>
+
+                <label>Customer Phone Number</label>
+                <input type="text"
+                       id="editCPhone"
+                       value="${record.C_phone}"
+                       inputmode="numeric"
+                       required>
+
+                <button type="submit">
+                    Update Customer
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* EMPLOYEE */
+
+            else if (table === "employee") {
+
+                area.innerHTML = `
+            <form onsubmit="updateEmployee(event)">
+
+                <label>Employee Name</label>
+                <input type="text"
+                       id="editEName"
+                       value="${record.E_name}"
+                       required>
+
+                <label>Employee Role</label>
+                <input type="text"
+                       id="editERole"
+                       value="${record.Role}"
+                       required>
+
+                <label>Employee Phone Number</label>
+                <input type="text"
+                       id="editEPhone"
+                       value="${record.E_phone}"
+                       inputmode="numeric"
+                       required>
+
+                <label>Warehouse ID</label>
+                <input type="text"
+                       id="editEWId"
+                       value="${record.W_id}"
+                       inputmode="numeric"
+                       required>
+
+                <label>Supervisor Employee ID</label>
+                <input type="text"
+                       id="editESupervisor"
+                       value="${record.Supervisor_id || ""}"
+                       inputmode="numeric">
+
+                <button type="submit">
+                    Update Employee
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* WAREHOUSE */
+
+            else if (table === "warehouse") {
+
+                area.innerHTML = `
+            <form onsubmit="updateWarehouse(event)">
+
+                <label>Warehouse Name</label>
+                <input type="text"
+                       id="editWName"
+                       value="${record.W_name}"
+                       required>
+
+                <label>Warehouse Area</label>
+                <input type="text"
+                       id="editWArea"
+                       value="${record.W_Area}"
+                       required>
+
+                <label>Warehouse City</label>
+                <input type="text"
+                       id="editWCity"
+                       value="${record.W_City}"
+                       required>
+
+                <label>Warehouse State</label>
+                <input type="text"
+                       id="editWState"
+                       value="${record.W_State}"
+                       required>
+
+                <label>Warehouse Pincode</label>
+                <input type="text"
+                       id="editWPincode"
+                       value="${record.W_Pincode}"
+                       inputmode="numeric"
+                       required>
+
+                <label>Warehouse Capacity</label>
+                <input type="text"
+                       id="editWCapacity"
+                       value="${record.Capacity}"
+                       inputmode="numeric"
+                       required>
+
+                <label>Manager Employee ID</label>
+                <input type="text"
+                       id="editWManager"
+                       value="${record.Manager_id || ""}"
+                       inputmode="numeric">
+
+                <button type="submit">
+                    Update Warehouse
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+
+
+            /* ORDER */
+
+            else if (table === "order") {
+
+                area.innerHTML = `
+            <form onsubmit="updateOrder(event)">
+
+                <label>Order Date</label>
+                <input type="date"
+                       id="editODate"
+                       value="${record.O_date}"
+                       required>
+
+                <label>Payment Type</label>
+                <input type="text"
+                       id="editOPayment"
+                       value="${record.Payment_Type}"
+                       required>
+
+                <label>Customer ID</label>
+                <input type="text"
+                       id="editOCId"
+                       value="${record.C_id}"
+                       inputmode="numeric"
+                       required>
+
+                <button type="submit">
+                    Update Order
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+        `;
+            }
+        }
+
+
+        /* =====================================================
+           UPDATE FUNCTIONS
+        ===================================================== */
+
+        async function updateProduct(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                p_id: id,
+                p_name: document.getElementById("editPName").value,
+                p_price: document.getElementById("editPPrice").value,
+                category: document.getElementById("editPCategory").value
+            };
+
+            const response = await fetch("/update-product", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        async function updateSupplier(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                s_id: id,
+                s_name: document.getElementById("editSName").value
+            };
+
+            const response = await fetch("/update-supplier", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        async function updateCustomer(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                c_id: id,
+                c_name: document.getElementById("editCName").value,
+                c_phone: document.getElementById("editCPhone").value
+            };
+
+            const response = await fetch("/update-customer", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        async function updateEmployee(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                e_id: id,
+                e_name: document.getElementById("editEName").value,
+                role: document.getElementById("editERole").value,
+                e_phone: document.getElementById("editEPhone").value,
+                w_id: document.getElementById("editEWId").value,
+                supervisor_id:
+                    document.getElementById("editESupervisor").value || null
+            };
+
+            const response = await fetch("/update-employee", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        async function updateWarehouse(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                w_id: id,
+                w_name: document.getElementById("editWName").value,
+                w_area: document.getElementById("editWArea").value,
+                w_city: document.getElementById("editWCity").value,
+                w_state: document.getElementById("editWState").value,
+                w_pincode: document.getElementById("editWPincode").value,
+                capacity: document.getElementById("editWCapacity").value,
+                manager_id:
+                    document.getElementById("editWManager").value || null
+            };
+
+            const response = await fetch("/update-warehouse", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        async function updateOrder(event) {
+
+            event.preventDefault();
+
+            const id = document.getElementById("updateId").value;
+
+            const data = {
+                o_id: id,
+                o_date: document.getElementById("editODate").value,
+                payment_type: document.getElementById("editOPayment").value,
+                c_id: document.getElementById("editOCId").value
+            };
+
+            const response = await fetch("/update-order", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            showMessage(await response.json());
+        }
+
+
+        /* =====================================================
+           DELETE
+        ===================================================== */
+
+        function showDelete(table) {
+
+            const area = document.getElementById("formArea");
+
+            let label;
+
+            if (table === "product") label = "Product ID";
+            else if (table === "supplier") label = "Supplier ID";
+            else if (table === "customer") label = "Customer ID";
+            else if (table === "employee") label = "Employee ID";
+            else if (table === "warehouse") label = "Warehouse ID";
+            else if (table === "order") label = "Order ID";
+
+            area.innerHTML = `
+        <h3>Delete ${capitalize(table)}</h3>
+
+        <label>${label}</label>
+
+        <input type="text"
+               id="deleteId"
+               inputmode="numeric">
+
+        <button onclick="deleteRecord('${table}')">
+            Delete
+        </button>
+
+        <p id="message" class="message"></p>
+    `;
+        }
+
+
+        async function deleteRecord(table) {
+
+            const id = document.getElementById("deleteId").value;
+
+            if (!id) return;
+
+            let getUrl;
+            let deleteUrl;
+
+            if (table === "product") {
+                getUrl = `/get-product/${id}`;
+                deleteUrl = `/delete-product/${id}`;
+            }
+
+            else if (table === "supplier") {
+                getUrl = `/get-supplier/${id}`;
+                deleteUrl = `/delete-supplier/${id}`;
+            }
+
+            else if (table === "customer") {
+                getUrl = `/get-customer/${id}`;
+                deleteUrl = `/delete-customer/${id}`;
+            }
+
+            else if (table === "employee") {
+                getUrl = `/get-employee/${id}`;
+                deleteUrl = `/delete-employee/${id}`;
+            }
+
+            else if (table === "warehouse") {
+                getUrl = `/get-warehouse/${id}`;
+                deleteUrl = `/delete-warehouse/${id}`;
+            }
+
+            else if (table === "order") {
+                getUrl = `/get-order/${id}`;
+                deleteUrl = `/delete-order/${id}`;
+            }
+
+
+            const response = await fetch(getUrl);
+            const result = await response.json();
+
+            if (!result.found) {
+
+                showMessage({
+                    success: false,
+                    message: result.message
+                });
+
+                return;
+            }
+
+
+            const record = result.record || result.product;
+
+            const confirmed = confirm(
+                `Are you sure you want to delete this ${capitalize(table)}?`
+            );
+
+            if (!confirmed) return;
+
+
+            const deleteResponse = await fetch(
+                deleteUrl,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            const deleteResult = await deleteResponse.json();
+
+            showMessage(deleteResult);
+        }
+
+
+        /* =====================================================
+           VIEW
+        ===================================================== */
+
+        async function viewRecords(table) {
+
+            const area = document.getElementById("formArea");
+
+            let url;
+
+            if (table === "product")
+                url = "/view-products";
+
+            else if (table === "supplier")
+                url = "/view-suppliers";
+
+            else if (table === "customer")
+                url = "/view-customers";
+
+            else if (table === "employee")
+                url = "/view-employees";
+
+            else if (table === "warehouse")
+                url = "/view-warehouses";
+
+            else if (table === "order")
+                url = "/view-orders";
+
+
+            const response = await fetch(url);
+            const records = await response.json();
+
+            if (!records.length) {
+
+                area.innerHTML = `
+            <p class="message">
+                No records found.
+            </p>
+        `;
+
+                return;
+            }
+
+
+            const columnOrders = {
+                product: ["P_id", "P_name", "P_price", "Category"],
+
+                supplier: ["S_id", "S_name"],
+
+                customer: ["C_id", "C_name", "C_phone"],
+
+                employee: [
+                    "E_id",
+                    "E_name",
+                    "Role",
+                    "E_phone",
+                    "W_id",
+                    "Supervisor_id"
+                ],
+
+                warehouse: [
+                    "W_id",
+                    "W_name",
+                    "W_Area",
+                    "W_City",
+                    "W_State",
+                    "W_Pincode",
+                    "Capacity",
+                    "Manager_id",
+                    "Cur_stock"
+                ],
+
+                order: [
+                    "O_id",
+                    "O_date",
+                    "Payment_Type",
+                    "C_id",
+                    "Total_amt"
+                ]
+            };
+
+            const columns = columnOrders[table];
+
+            let html = `
+        <h3>${capitalize(table)} List</h3>
+
+        <table>
+
+            <thead>
+                <tr>
+    `;
+
+            columns.forEach(column => {
+
+                html += `
+            <th>${fieldLabels[column] || column}</th>
+        `;
+
+            });
+
+            html += `
+                </tr>
+            </thead>
+
+            <tbody>
+    `;
+
+
+            records.forEach(record => {
+
+    html += `<tr>`;
+
+    columns.forEach(column => {
+
+        let cellValue = record[column] ?? "";
+
+        if (column === "P_id") {
+            cellValue = `<a href="#" onclick="showRelated('product', ${record[column]}); return false;">
+                            ${record[column]}
+                         </a>`;
+        }
+
+        else if (column === "S_id") {
+            cellValue = `<a href="#" onclick="showRelated('supplier', ${record[column]}); return false;">
+                            ${record[column]}
+                         </a>`;
+        }
+
+        else if (column === "W_id" && table === "warehouse") {
+            cellValue = `<a href="#" onclick="showRelated('warehouse', ${record[column]}); return false;">
+                            ${record[column]}
+                         </a>`;
+        }
+
+        else if (column === "O_id") {
+            cellValue = `<a href="#" onclick="showRelated('order', ${record[column]}); return false;">
+                            ${record[column]}
+                         </a>`;
+        }
+
+        html += `
+            <td>${cellValue}</td>
+        `;
+
+    });
+
+    html += `</tr>`;
+
+});
+
+
+            html += `
+            </tbody>
+
+        </table>
+    `;
+
+            area.innerHTML = html;
+        }
+
+        /* =====================================================
+           MESSAGE
+        ===================================================== */
+
+        function showMessage(result) {
+
+            const message = document.getElementById("message");
+
+            if (!message) return;
+
+            message.textContent = result.message;
+
+            message.className =
+                result.success
+                    ? "message success"
+                    : "message error";
+        }
+       
+        /* =====================================================
+           CAPITALIZE
+        ===================================================== */
+
+        function capitalize(text) {
+
+            return text
+                .replace("-", " ")
+                .replace(/\b\w/g, letter => letter.toUpperCase());
+        }
+
+    </script>
+
+<script src="{{ url_for('static', filename='fields.js') }}"></script>
+<script src="{{ url_for('static', filename='related.js') }}"></script>
+</body>
+
+</html>
