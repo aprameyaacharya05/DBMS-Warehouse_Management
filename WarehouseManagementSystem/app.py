@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from database import get_connection, prompt_database_password
+from auth import initialize_auth, dashboard_page, home_page
 
 from queries import (
+    DeletionError,
     add_record,
     get_record,
     get_all_records,
@@ -13,19 +15,23 @@ from queries import (
 )
 
 app = Flask(__name__)
+initialize_auth(app)
 
-@app.route("/")
+
+@app.errorhandler(DeletionError)
+def handle_deletion_error(error):
+    return jsonify(success=False, message=str(error)), error.status_code
+
+
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template(
-        "index.html",
-        message="Welcome to Warehouse Management System!"
-    )
+    return home_page()
 
 # --------------- PRODUCTS ---------------
 
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    return dashboard_page()
 
 @app.route("/add-product", methods=["POST"])
 def add_product_route():

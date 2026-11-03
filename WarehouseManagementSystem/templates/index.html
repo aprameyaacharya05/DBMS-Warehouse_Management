@@ -26,10 +26,28 @@
                     customer orders, and employees in one place.
                 </p>
 
-                <a href="/dashboard" class="dashboard-button">
-                    Show Dashboard
-                    <span aria-hidden="true">→</span>
-                </a>
+                <section class="home-login" aria-labelledby="login-heading">
+                    {% if username %}
+                    <h2 id="login-heading">Welcome, {{ username }}</h2>
+                    <p>Signed in as {{ role_name }}</p>
+                    <a href="{{ url_for('dashboard') }}" class="dashboard-button">Continue to Dashboard →</a>
+                    <form method="post" action="{{ url_for('logout') }}" class="home-logout">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit">Log out</button>
+                    </form>
+                    {% else %}
+                    <h2 id="login-heading">Log in</h2>
+                    <form method="post" action="{{ url_for('home') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <label for="loginUsername">Username</label>
+                        <input id="loginUsername" name="username" autocomplete="username" required>
+                        <label for="loginPassword">Password</label>
+                        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+                        {% if login_error %}<p class="message error" role="alert">{{ login_error }}</p>{% endif %}
+                        <button type="submit">Log in →</button>
+                    </form>
+                    {% endif %}
+                </section>
 
             </div>
 

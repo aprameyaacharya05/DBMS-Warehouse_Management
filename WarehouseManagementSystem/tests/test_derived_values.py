@@ -37,12 +37,14 @@ class DerivedValuesTests(unittest.TestCase):
         self.connection.db.executescript('''
             CREATE TABLE Warehouse (W_id INTEGER PRIMARY KEY);
             CREATE TABLE Inventory (W_id INTEGER, P_id INTEGER, P_quantity INTEGER);
-            CREATE TABLE `Order` (O_id INTEGER PRIMARY KEY);
+            CREATE TABLE Customer (C_id INTEGER PRIMARY KEY);
+            CREATE TABLE `Order` (O_id INTEGER PRIMARY KEY, C_id INTEGER);
             CREATE TABLE Order_Item (O_id INTEGER, Item_no INTEGER,
                 I_quantity INTEGER, Sell_price DECIMAL);
             INSERT INTO Warehouse VALUES (1), (2), (3);
             INSERT INTO Inventory VALUES (1,201,5), (1,202,8), (2,201,10);
-            INSERT INTO `Order` VALUES (501), (502), (503);
+            INSERT INTO Customer VALUES (401), (402), (403);
+            INSERT INTO `Order` VALUES (501,401), (502,401), (503,402);
             INSERT INTO Order_Item VALUES (501,1,2,12.50), (501,2,3,4), (502,1,1,7);
         ''')
 
@@ -56,6 +58,19 @@ class DerivedValuesTests(unittest.TestCase):
     def test_totals_are_separate_per_order_and_empty_is_zero(self):
         rows = get_all_records(self.connection, 'Order')
         self.assertEqual({r['O_id']: r['Total_amt'] for r in rows}, {501:37, 502:7, 503:0})
+
+    def test_customer_order_count_and_zero(self):
+        rows = get_all_records(self.connection, 'Customer')
+        self.assertEqual({r['C_id']: r['Order_count'] for r in rows}, {401:2, 402:1, 403:0})
+        # Counts orders, not the number of items in those orders.
+        db = self.connection.db
+        db.execute('INSERT INTO `Order` VALUES (504,403)')
+        self.assertEqual(get_record(self.connection, 'Customer', 'C_id', 403)['Order_count'], 1)
+        db.execute('UPDATE `Order` SET C_id=402 WHERE O_id=504')
+        self.assertEqual(get_record(self.connection, 'Customer', 'C_id', 403)['Order_count'], 0)
+        self.assertEqual(get_record(self.connection, 'Customer', 'C_id', 402)['Order_count'], 2)
+        db.execute('DELETE FROM `Order` WHERE O_id=504')
+        self.assertEqual(get_record(self.connection, 'Customer', 'C_id', 402)['Order_count'], 1)
 
     def test_totals_recalculate_after_edit_and_delete(self):
         db = self.connection.db

@@ -1,5 +1,38 @@
 from validation import validate_values
 
+class DeletionError(Exception):
+    """A safe message for a failed delete, suitable for the dashboard."""
+    def __init__(self, message, status_code=409):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+DELETE_MESSAGES = {
+    'Product': 'Cannot delete this product: inventory, order items, or supply links still reference it.',
+    'Supplier': 'Cannot delete this supplier: phone numbers, addresses, or supply links still reference it. Remove those related records first.',
+    'Customer': 'Cannot delete this customer because they have existing orders.',
+    'Warehouse': 'Cannot delete this warehouse: employees or inventory still reference it. Reassign employees and resolve inventory records first.',
+    "Employee": "Cannot delete this employee: they may be assigned as a warehouse manager or as another employee's supervisor. Reassign those responsibilities first.",
+    'Order': 'Cannot delete this order because it contains order items. Review those items before deleting the order.'
+}
+
+
+def execute_delete(connection, table, query, values):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(query, values)
+        connection.commit()
+    except Exception as error:
+        connection.rollback()
+        if getattr(error, 'errno', None) == 1451:
+            raise DeletionError(DELETE_MESSAGES.get(
+                table, 'Cannot delete this record because other records reference it.'
+            )) from error
+        raise DeletionError('The record could not be deleted. Please try again.', 500) from error
+    finally:
+        cursor.close()
+
+
 
 def capacity_checked_write(connection, warehouse_id, query, values,
                            product_id=None, quantity=None, capacity=None,
@@ -55,6 +88,11 @@ def get_table_name(table):
 
 def select_records_sql(table):
     # Derived attributes are calculated from the current rows, never stored.
+    if table == "Customer":
+        return """SELECT Customer.*,
+            (SELECT COUNT(O_id) FROM `Order`
+             WHERE `Order`.C_id = Customer.C_id) AS Order_count
+            FROM Customer"""
     if table == "Warehouse":
         return """SELECT Warehouse.*,
             (SELECT COALESCE(SUM(P_quantity), 0) FROM Inventory
@@ -129,14 +167,9 @@ def update_record(connection, table, pk_column, pk_value, data):
     cursor.close()
 
 def delete_record(connection, table, pk_column, pk_value):
-    cursor = connection.cursor()
-    query = f"""
-        DELETE FROM {get_table_name(table)}
-        WHERE {pk_column} = %s
-    """
-    cursor.execute(query, (pk_value,))
-    connection.commit()
-    cursor.close()
+    query = f"DELETE FROM {get_table_name(table)} WHERE {pk_column} = %s"
+    execute_delete(connection, table, query, (pk_value,))
+
 
 def get_composite_record(connection, table, conditions):
     cursor = connection.cursor(dictionary=True)
@@ -213,28 +246,7 @@ def update_composite_record(
     cursor.close()
 
 
-def delete_composite_record(
-    connection,
-    table,
-    conditions
-):
-    cursor = connection.cursor()
-
-    where_clause = " AND ".join(
-        f"{column} = %s"
-        for column in conditions.keys()
-    )
-
-    query = f"""
-        DELETE FROM {get_table_name(table)}
-        WHERE {where_clause}
-    """
-
-    cursor.execute(
-        query,
-        tuple(conditions.values())
-    )
-
-    connection.commit()
-
-    cursor.close()
+def delete_composite_record(connection, table, conditions):
+    where_clause = " AND ".join(f"{column} = %s" for column in conditions)
+    query = f"DELETE FROM {get_table_name(table)} WHERE {where_clause}"
+    execute_delete(connection, table, query, tuple(conditions.values()))

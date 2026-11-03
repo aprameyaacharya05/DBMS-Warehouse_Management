@@ -8,6 +8,7 @@ const fieldLabels = {
     S_id: 'Supplier ID', S_name: 'Supplier Name', S_phone: 'Supplier Phone Number',
     Addr_no: 'Supplier Address Number', S_Area: 'Supplier Area', S_City: 'Supplier City',
     S_State: 'Supplier State', S_Pincode: 'Supplier Pincode',
+    Order_count: 'Number of Orders',
     C_id: 'Customer ID', C_name: 'Customer Name', C_phone: 'Customer Phone Number',
     E_id: 'Employee ID', E_name: 'Employee Name', Role: 'Employee Role',
     E_phone: 'Employee Phone Number', Supervisor_id: 'Supervisor Employee ID',

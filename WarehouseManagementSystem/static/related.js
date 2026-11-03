@@ -70,10 +70,12 @@ function renderRelatedTable(table, records, defaults, area) {
     const add = document.createElement('button');
     add.textContent = `Add ${capitalize(table)}`;
     add.onclick = () => relatedForm(table, defaults, false, section);
-    section.append(heading, add);
+    section.append(heading);
+    if (canAccess(table, 'add')) section.append(add);
+    const editable = canAccess(table, 'update') || canAccess(table, 'delete');
     const grid = document.createElement('table');
     const header = grid.createTHead().insertRow();
-    for (const name of [...config.fields, 'Actions']) {
+    for (const name of [...config.fields, ...(editable ? ['Actions'] : [])]) {
         const cell = document.createElement('th');
         cell.textContent = fieldLabels[name] || name;
         header.append(cell);
@@ -82,6 +84,7 @@ function renderRelatedTable(table, records, defaults, area) {
     for (const record of records) {
         const row = body.insertRow();
         for (const field of config.fields) row.insertCell().textContent = record[field] ?? '';
+        if (!editable) continue;
         const actions = row.insertCell();
         const edit = document.createElement('button');
         edit.textContent = 'Edit';
@@ -97,12 +100,13 @@ function renderRelatedTable(table, records, defaults, area) {
                 relatedMessage(result.message, true);
             } catch (error) { relatedMessage(error.message); }
         };
-        actions.append(edit, remove);
+        if (canAccess(table, 'update')) actions.append(edit);
+        if (canAccess(table, 'delete')) actions.append(remove);
     }
     section.append(grid);
     if (!records.length) {
         const empty = document.createElement('p');
-        empty.textContent = 'No records found. Use Add to create one.';
+        empty.textContent = canAccess(table, 'add') ? 'No records found. Use Add to create one.' : 'No records found.';
         section.append(empty);
     }
     area.append(section);

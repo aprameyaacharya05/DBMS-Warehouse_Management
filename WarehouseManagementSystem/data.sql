@@ -183,3 +183,10 @@ SELECT O.O_id,
 FROM `Order` AS O
 LEFT JOIN Order_Item AS I ON I.O_id = O.O_id
 GROUP BY O.O_id;
+
+
+-- Number of orders per customer, including customers with no orders.
+SELECT C.C_id, C.C_name, COUNT(O.O_id) AS Order_count
+FROM Customer AS C
+LEFT JOIN `Order` AS O ON O.C_id = C.C_id
+GROUP BY C.C_id, C.C_name;

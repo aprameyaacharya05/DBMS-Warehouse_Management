@@ -663,7 +663,7 @@ input[aria-invalid="true"] {
 body {
     background-color: #FFF8E8;
     background-image:
-        linear-gradient(135deg, rgba(255, 248, 230, 0.81), rgba(255, 243, 218, 0.77)),
+        linear-gradient(135deg, rgba(255, 248, 230, 0.22), rgba(255, 243, 218, 0.18)),
         url("warehouse-dashboard-aisle.jpg");
     background-size: cover;
     background-position: center;
@@ -674,7 +674,7 @@ body {
 body.home-page {
     background-color: #FFF4DD;
     background-image:
-        linear-gradient(135deg, rgba(255, 249, 230, 0.75), rgba(255, 236, 197, 0.71)),
+        linear-gradient(135deg, rgba(255, 249, 230, 0.22), rgba(255, 236, 197, 0.18)),
         url("warehouse-home.webp");
     background-size: cover;
     background-position: center;
@@ -686,4 +686,41 @@ body.home-page {
     body, body.home-page {
         background-attachment: scroll;
     }
+}
+
+
+.dashboard-session {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: rgba(255, 253, 245, 0.95);
+}
+.dashboard-session form { width: auto; margin: 0; padding: 0; border: 0; box-shadow: none; background: none; }
+.dashboard-session p { margin: 0; }
+
+
+/* Login is embedded in the existing orange index-page hero. */
+.home-login {
+    width: 100%;
+    max-width: 390px;
+    margin: 28px auto 0;
+    padding: 24px;
+    border: 1px solid #F1D487;
+    border-radius: 14px;
+    background: #FFFDF5;
+    color: #70401F;
+    text-align: left;
+    box-shadow: 0 5px 16px rgba(120, 60, 0, 0.15);
+}
+.home-login h2 { margin: 0 0 18px; text-align: center; }
+.home-login form { width: 100%; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.home-login input { width: 100%; }
+.home-login button { margin: 8px 0 0; width: 100%; }
+.home-login .dashboard-button { display: flex; justify-content: center; }
+@media (max-width: 500px) {
+    .home-login { padding: 20px; }
 }

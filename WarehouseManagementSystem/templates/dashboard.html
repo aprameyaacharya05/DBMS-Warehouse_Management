@@ -1,8 +1,10 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Warehouse Management System</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -12,16 +14,43 @@
 
     <h1>Warehouse Management System</h1>
 
+
+    <div class="dashboard-session">
+        <p>Signed in as <strong>{{ username }}</strong> · {{ role_name }}</p>
+        <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="back-to-list">Log out</button>
+        </form>
+    </div>
+    <script>
+        const dashboardPermissions = {{ permissions | tojson }};
+        const dashboardCsrfToken = {{ csrf_token | tojson }};
+        function canAccess(table, action = 'view') {
+            return (dashboardPermissions[table] || []).includes(action);
+        }
+        // All existing dashboard fetch calls receive the session's request token.
+        const originalFetch = window.fetch.bind(window);
+        window.fetch = async (url, options = {}) => {
+            const headers = new Headers(options.headers || {});
+            if (new URL(url, location.href).origin === location.origin) {
+                headers.set('X-CSRF-Token', dashboardCsrfToken);
+            }
+            const response = await originalFetch(url, {...options, headers});
+            if (response.status === 401) location.replace('/dashboard');
+            return response;
+        };
+    </script>
+
     <!-- ================= TABLE MENU ================= -->
 
     <div class="table-menu">
 
-        <button onclick="showTable('product')">Products</button>
-        <button onclick="showTable('supplier')">Suppliers</button>
-        <button onclick="showTable('customer')">Customers</button>
-        <button onclick="showTable('employee')">Employees</button>
-        <button onclick="showTable('warehouse')">Warehouses</button>
-        <button onclick="showTable('order')">Orders</button>
+        {% if 'view' in permissions.get('product', []) %}<button onclick="showTable('product')">Products</button>{% endif %}
+        {% if 'view' in permissions.get('supplier', []) %}<button onclick="showTable('supplier')">Suppliers</button>{% endif %}
+        {% if 'view' in permissions.get('customer', []) %}<button onclick="showTable('customer')">Customers</button>{% endif %}
+        {% if 'view' in permissions.get('employee', []) %}<button onclick="showTable('employee')">Employees</button>{% endif %}
+        {% if 'view' in permissions.get('warehouse', []) %}<button onclick="showTable('warehouse')">Warehouses</button>{% endif %}
+        {% if 'view' in permissions.get('order', []) %}<button onclick="showTable('order')">Orders</button>{% endif %}
 
     </div>
 
@@ -75,30 +104,14 @@
 
 
         function operationButtons(table) {
-
-            return `
-        <div class="operation-buttons">
-
-            <button onclick="showAdd('${table}')">
-                Add
-            </button>
-
-            <button onclick="showUpdate('${table}')">
-                Update
-            </button>
-
-            <button onclick="showDelete('${table}')">
-                Delete
-            </button>
-
-            <button onclick="viewRecords('${table}')">
-                View
-            </button>
-
-        </div>
-
-        <div id="formArea"></div>
-    `;
+            const actions = [
+                ['add', 'Add', 'showAdd'], ['update', 'Update', 'showUpdate'],
+                ['delete', 'Delete', 'showDelete'], ['view', 'View', 'viewRecords']
+            ];
+            const buttons = actions.filter(([action]) => canAccess(table, action))
+                .map(([action, label, handler]) => `<button onclick="${handler}('${table}')">${label}</button>`)
+                .join('');
+            return `<div class="operation-buttons">${buttons}</div><div id="formArea"></div>`;
         }
 
 
@@ -1291,7 +1304,7 @@
 
                 supplier: ["S_id", "S_name"],
 
-                customer: ["C_id", "C_name", "C_phone"],
+                customer: ["C_id", "C_name", "C_phone", "Order_count"],
 
                 employee: [
                     "E_id",
@@ -1358,25 +1371,25 @@
 
         let cellValue = record[column] ?? "";
 
-        if (column === "P_id") {
+        if (column === "P_id" && canAccess("supplies")) {
             cellValue = `<a href="#" onclick="showRelated('product', ${record[column]}); return false;">
                             ${record[column]}
                          </a>`;
         }
 
-        else if (column === "S_id") {
+        else if (column === "S_id" && canAccess("supplier-phone")) {
             cellValue = `<a href="#" onclick="showRelated('supplier', ${record[column]}); return false;">
                             ${record[column]}
                          </a>`;
         }
 
-        else if (column === "W_id" && table === "warehouse") {
+        else if (column === "W_id" && table === "warehouse" && canAccess("inventory")) {
             cellValue = `<a href="#" onclick="showRelated('warehouse', ${record[column]}); return false;">
                             ${record[column]}
                          </a>`;
         }
 
-        else if (column === "O_id") {
+        else if (column === "O_id" && canAccess("order-item")) {
             cellValue = `<a href="#" onclick="showRelated('order', ${record[column]}); return false;">
                             ${record[column]}
                          </a>`;
